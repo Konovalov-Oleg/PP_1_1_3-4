@@ -15,7 +15,6 @@ public class UserDaoHibernateImpl implements UserDao {
 
     }
 
-
     @Override
     public void createUsersTable() {
         String sqlQuery = "create table if not exists users " +
@@ -24,16 +23,11 @@ public class UserDaoHibernateImpl implements UserDao {
                 " lastName VARCHAR(100) not null," +
                 " age TINYINT not null," +
                 " primary key (id))";
-        Session session = null;
-        try {
-            session = sessionFactory.getCurrentSession();
+        try (Session session = sessionFactory.getCurrentSession()) {
             session.beginTransaction();
             session.createSQLQuery(sqlQuery).executeUpdate();
             session.getTransaction().commit();
         } catch (Exception e) {
-            if (session != null) {
-                session.close();
-            }
             e.printStackTrace();
         }
     }
@@ -41,16 +35,11 @@ public class UserDaoHibernateImpl implements UserDao {
     @Override
     public void dropUsersTable() {
         String sqlQuery = "DROP table if exists users";
-        Session session = null;
-        try {
-            session = sessionFactory.getCurrentSession();
+        try (Session session = sessionFactory.getCurrentSession()) {
             session.beginTransaction();
             session.createSQLQuery(sqlQuery).executeUpdate();
             session.getTransaction().commit();
         } catch (Exception e) {
-            if (session != null) {
-                session.close();
-            }
             e.printStackTrace();
         }
     }
@@ -58,7 +47,7 @@ public class UserDaoHibernateImpl implements UserDao {
     @Override
     public void saveUser(String name, String lastName, byte age) {
         Session session = null;
-        try {
+        try  {
             session = sessionFactory.getCurrentSession();
             session.beginTransaction();
             session.save(new User(name, lastName, age));
@@ -93,17 +82,9 @@ public class UserDaoHibernateImpl implements UserDao {
     @Override
     public List<User> getAllUsers() {
         List<User> users = null;
-        Session session = null;
-        try {
-            session = sessionFactory.getCurrentSession();
-            session.beginTransaction();
+        try (Session session = sessionFactory.openSession()) {
             users = session.createQuery("from User").getResultList();
-            session.getTransaction().commit();
         } catch (Exception e) {
-            if (session != null) {
-                session.getTransaction().rollback();
-                session.close();
-            }
             e.printStackTrace();
         }
         return users;
